@@ -1,0 +1,93 @@
+/*
+	Lab08 Part II
+*/
+
+import java.io.*;
+import java.util.*;
+import java.sql.*;
+
+public class LabNine {
+	public static final String ANSI_RESET = "\u001B[0m";
+	public static final String ANSI_BLUE = "\u001B[34m";
+	public static final String ANSI_GREEN = "\u001B[32m";
+	public static final String ANSI_RED = "\u001B[31m";
+
+	private ArrayList<Employee> employees = new ArrayList<>();
+
+	public static void main (String[] args) {
+		new LabNine().go();
+	}
+
+	/**
+	 * Read login details, connect to Oracle, and run SQL statements
+	 * @author Paul Werstein
+	 * @author Naveen Mathew
+	 */
+	private void go() {
+		// Read pass.dat
+		UserPass login = new UserPass();
+		String user = login.getUserName();
+		String pass = login.getPassWord();
+		String host = "silver.otago.ac.nz";
+
+		Connection con = null;
+		try {
+			// Register driver and connect to Oracle
+			DriverManager.registerDriver (new oracle.jdbc.driver.OracleDriver());
+			String url = "jdbc:oracle:thin:@" + host + ":1527:cosc344";
+			System.out.println(ANSI_BLUE + "Connection URL: " + url + ANSI_RESET);
+			con = DriverManager.getConnection(url, user, pass);
+			System.out.println(ANSI_BLUE + "Connected to Oracle" + ANSI_RESET);
+			getEmployees(con);
+		} catch (SQLException e) {
+			quit(e.getMessage());
+		} finally {
+			if (con != null) {
+				try {
+					con.close();
+				} catch (SQLException e) {
+					quit(e.getMessage());
+				}
+			}
+		}
+	}
+
+	// Get all employees
+	private void getEmployees(Connection con) {
+		try {
+			Statement stmt = con.createStatement();
+			ResultSet resultSet = stmt.executeQuery("SELECT fname, lname, salary FROM employee");
+			ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+			int columns = resultSetMetaData.getColumnCount();
+
+			for (int i = 1; i <= columns; i++) {
+				System.out.print(resultSetMetaData.getColumnName(i) + spaces(15 - resultSetMetaData.getColumnName(i).length()) );
+			}
+			System.out.println("\n------------------------------------");
+
+			while (resultSet.next()) {
+				employees.add(new Employee(resultSet.getString(1), resultSet.getString(2), Integer.parseInt(resultSet.getString(3))) );
+			}
+
+			employees.sort((e1, e2) -> e1.compare(e2.getSalary()) );
+			employees.forEach(System.out::println);
+		} catch (SQLException e) {
+			quit(e.getMessage());
+		}
+	}
+
+        private String spaces (int number) {
+                StringBuffer buf = new StringBuffer();
+                for (int i = 0; i < number; i++) {
+			buf.append(' ');
+        	}
+
+        	return buf.toString();
+        }
+
+	// Used to output an error message and exit
+	private void quit (String message) {
+		System.err.println(ANSI_RED + message + ANSI_RESET);
+		System.exit(1);
+	}
+}

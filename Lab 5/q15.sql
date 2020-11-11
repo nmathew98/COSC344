@@ -1,0 +1,1 @@
+SELECT orders.onum, customers.cname, customers.cnum, salespeople.snum FROM orders, customers, salespeople WHERE customers.city<>salespeople.city AND orders.cnum = customers.cnum AND orders.snum = salespeople.snum ORDER BY orders.onum ASC;

@@ -1,0 +1,10 @@
+SELECT sname, snum FROM salespeople WHERE (SELECT COUNT(*) FROM customers WHERE customers.snum = salespeople.snum) > 1;
+SELECT * FROM orders o WHERE amt > (SELECT AVG(amt) FROM orders i WHERE o.cnum = i.cnum);
+SELECT fname, lname FROM employee WHERE NOT EXISTS (SELECT * FROM dependent WHERE essn = ssn);
+SELECT pnumber FROM project WHERE pnumber IN (SELECT pno FROM works_on WHERE essn = (SELECT ssn FROM employee WHERE lname = 'Smith')) UNION SELECT pnumber FROM project WHERE dnum = (SELECT dnumber FROM department WHERE mgrssn = (SELECT ssn FROM employee WHERE lname = 'Smith'));
+UPDATE employee SET salary = 1.1 * salary WHERE lname != 'Borg';
+SELECT lname, salary FROM employee;
+CREATE TABLE hou_emp AS SELECT * FROM employee WHERE address LIKE '%Houston%';
+SELECT * FROM hou_emp;
+CREATE TABLE emp_dep AS (SELECT fname, lname, dependent_name, dependent.sex, dependent.bdate FROM employee, dependent WHERE essn = ssn);
+SELECT * FROM emp_dep;
